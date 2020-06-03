@@ -18,14 +18,14 @@ variable "private_subnet_cidr_blocks" {
   description = "List of CIDR blocks for the private subnets"
 }
 
-variable "control_plane_instance_type" {
+variable "master_instance_type" {
   type        = string
-  description = "EC2 instance type of the control plane instances"
+  description = "EC2 instance type of the master instances"
 }
 
-variable "node_group_instance_type" {
+variable "node_instance_type" {
   type        = string
-  description = "EC2 instance type of the node group instances"
+  description = "EC2 instance type of the node instances"
 }
 
 variable "bastion_instance_type" {

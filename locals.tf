@@ -21,4 +21,13 @@ locals {
     cluster-name   = local.cluster_name
     cluster-region = var.region
   }
+
+  // Common autoscaling group tags which need to be specified in a different format
+  common_asg_tags = [
+    for k, v in local.common_tags : {
+      key                 = k
+      value               = v
+      propagate_at_launch = true
+    }
+  ]
 }
