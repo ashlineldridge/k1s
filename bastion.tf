@@ -52,21 +52,6 @@ resource "aws_security_group" "bastion" {
   depends_on = [module.vpc]
 }
 
-data "aws_iam_policy_document" "bastion" {
-  statement {
-    sid = "AllowSessionManager"
-    actions = [
-      "ssm:UpdateInstanceInformation",
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel",
-      "s3:GetEncryptionConfiguration",
-    ]
-    resources = ["*"]
-  }
-}
-
 resource "aws_iam_role" "bastion" {
   name                  = "${local.cluster_id}-bastion"
   description           = "Bastion role for ${local.cluster_id}"
@@ -75,19 +60,8 @@ resource "aws_iam_role" "bastion" {
   tags                  = local.common_tags
 }
 
-data "aws_iam_policy_document" "ec2_assume" {
-  statement {
-    sid     = "AllowEC2AssumeRole"
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_role_policy" "bastion" {
-  policy = data.aws_iam_policy_document.bastion.json
+resource "aws_iam_role_policy" "bastion_session_manager" {
+  policy = data.aws_iam_policy_document.session_manager.json
   role   = aws_iam_role.bastion.name
 }
 

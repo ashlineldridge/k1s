@@ -1,19 +1,28 @@
-build_dir    := target
+cluster_name := k1s
 region       := us-west-1
 workspace    := k1s-$(region)
+build_dir    := target
 plan_file    := $(build_dir)/$(workspace).tfplan
+sh_src       := $(shell find . -type f -name '*.sh')
 
 # Variables consumed by Terraform
-export TF_IN_AUTOMATION := 1
-export TF_VAR_region    := $(region)
+export TF_IN_AUTOMATION    := 1
+export TF_VAR_cluster_name := $(cluster_name)
+export TF_VAR_region       := $(region)
 
 no_color := \033[0m
 ok_color := \033[38;5;74m
 em_color := \033[34;01m
 ul_on    := \033[4m
 ul_off   := \033[24m
+
+# Function for printing a pretty banner
 banner = \
 	@echo "\n$(ok_color)$(em_color)=====> $1$(no_color)"
+
+# Function for checking that a variable is defined
+check_defined = \
+	$(if $(value $1),,$(error Error: Variable $1 ($2) is undefined))
 
 .PHONY: clean
 clean:
@@ -23,7 +32,11 @@ clean:
 .PHONY: lint
 lint:
 	$(call banner,Linting Terraform)
-	terraform fmt -diff -check
+	@terraform fmt -diff -check
+	$(call banner,Running Shfmt)
+	@shfmt -i 2 -ci -sr -bn -d $(sh_src)
+	$(call banner,Running Shellcheck)
+	@shellcheck $(sh_src)
 
 $(build_dir):
 	@mkdir -p $(build_dir)
@@ -67,3 +80,21 @@ refresh: $(workspace)
 destroy: $(workspace)
 	$(call banner,Destroying Terraform resources)
 	TF_IN_AUTOMATION=0 terraform destroy
+
+.PHONY: import
+import: $(workspace)
+	$(call banner,Importing Terraform resource)
+	$(call check_defined,TERRAFORM_ID,Terraform identifier (e.g., "aws_iam_role.my_role"))
+	$(call check_defined,AWS_ID,AWS identifier (e.g., "my-role"))
+	terraform import $(TERRAFORM_ID) $(AWS_ID)
+
+.PHONY: list
+list:
+	$(call banner,Listing cluster instances)
+	./scripts/list.sh $(cluster_name) $(region)
+
+.PHONY: session
+session:
+	$(call banner,Listing cluster instances)
+	$(call check_defined,INSTANCE_ID,ID of instance to connect to)
+	./scripts/session.sh $(INSTANCE_ID) $(region)

@@ -1,3 +1,8 @@
+variable "cluster_name" {
+  type        = string
+  description = "Name of the Kubernetes cluster"
+}
+
 variable "region" {
   type        = string
   description = "AWS region to provision resources in"
@@ -23,9 +28,19 @@ variable "master_instance_type" {
   description = "EC2 instance type of the master instances"
 }
 
+variable "master_instance_count" {
+  type        = string
+  description = "Total number of master instances"
+}
+
 variable "node_instance_type" {
   type        = string
   description = "EC2 instance type of the node instances"
+}
+
+variable "node_instance_count" {
+  type        = string
+  description = "Total number of node instances"
 }
 
 variable "bastion_instance_type" {
