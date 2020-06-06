@@ -2,4 +2,4 @@
 
 set -eou pipefail
 
-echo "Hello Node 1" > /tmp/hello.txt
+echo "Hello Node 2!" > /tmp/hello.txt

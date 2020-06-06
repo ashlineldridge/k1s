@@ -5,6 +5,9 @@ build_dir    := target
 plan_file    := $(build_dir)/$(workspace).tfplan
 sh_src       := $(shell find . -type f -name '*.sh')
 
+# Variables consumed by scripts
+export MAKE := 1
+
 # Variables consumed by Terraform
 export TF_IN_AUTOMATION    := 1
 export TF_VAR_cluster_name := $(cluster_name)
@@ -89,9 +92,9 @@ import: $(workspace)
 	terraform import $(TERRAFORM_ID) $(AWS_ID)
 
 .PHONY: list
-list:
+list: $(workspace)
 	$(call banner,Listing cluster instances)
-	./scripts/list.sh $(cluster_name) $(region)
+	./scripts/list.sh
 
 .PHONY: session
 session:

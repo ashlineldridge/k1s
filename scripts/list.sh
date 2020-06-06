@@ -1,45 +1,35 @@
 #!/usr/bin/env bash
 
-# shellcheck source=scripts/lib/common.sh
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
+# shellcheck source=scripts/lib/outputs.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/outputs.sh"
+
+ensure_make "list"
 
 usage() {
   cat << EOF
-Usage: $(basename "${0}") <cluster-name> <region>
+Usage: $(basename "${0}")
 
 Lists the EC2 instances in the project according to their type (i.e.,
-bastion, master, or node) for the specified cluster.
+bastion, master, or node) for the current cluster.
 
 EOF
   exit 1
 }
 
-(($# != 2)) && usage
-
-cluster_name="${1}"
-region="${2}"
-
-master_asg_name="${cluster_name}-${region}-master"
-node_asg_name="${cluster_name}-${region}-node"
-bastion_name="${cluster_name}-${region}-bastion"
+(($# != 0)) && usage
 
 printf "\nMaster instances:\n"
 aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names "${master_asg_name}" \
+  --auto-scaling-group-names "${master_autoscaling_group}" \
   --region "${region}" \
   --query 'AutoScalingGroups[].Instances[].InstanceId' \
   --output text
 
 printf "\nNode instances:\n"
 aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-names "${node_asg_name}" \
+  --auto-scaling-group-names "${node_autoscaling_group}" \
   --region "${region}" \
   --query 'AutoScalingGroups[].Instances[].InstanceId' \
   --output text
 
-printf "\nBastion instance:\n"
-aws ec2 describe-instances \
-  --region "${region}" \
-  --filters "Name=tag:Name,Values=${bastion_name}" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[].Instances[].InstanceId[]' \
-  --output text
+printf "\nBastion instance:\n${bastion_id}\n"
