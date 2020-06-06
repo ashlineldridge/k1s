@@ -32,4 +32,4 @@ aws autoscaling describe-auto-scaling-groups \
   --query 'AutoScalingGroups[].Instances[].InstanceId' \
   --output text
 
-printf "\nBastion instance:\n${bastion_id}\n"
+printf "\nBastion instance:\n%s\n" "${bastion_id}"

@@ -24,7 +24,7 @@ __tf_output() {
   echo "${value}"
 }
 
-# Retrieve each output value (alphabetic order)
+# Retrieve output values
 cluster_name="$(__tf_output cluster_name)"
 region="$(__tf_output region)"
 master_autoscaling_group="$(__tf_output master_autoscaling_group)"

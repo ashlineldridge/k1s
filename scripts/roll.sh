@@ -21,4 +21,8 @@ EOF
 
 roll_type="${1}"
 
-# TODO: get instances from asg names in outputs.sh
+if [[ "${roll_type}" == 'masters' ]]; then
+  echo >&2 "Rolling masters"
+else
+  echo >&2 "Rolling nodes"
+fi
