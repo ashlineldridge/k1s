@@ -28,9 +28,19 @@ output "master_autoscaling_group" {
   value       = aws_autoscaling_group.master.name
 }
 
+output "master_launch_template_id" {
+  description = "ID of the launch template for the Kubernetes masters"
+  value       = aws_launch_template.master.id
+}
+
 output "node_autoscaling_group" {
   description = "Name of the autoscaling group for the Kubernetes nodes"
   value       = aws_autoscaling_group.node.name
+}
+
+output "node_launch_template_id" {
+  description = "ID of the launch template for the Kubernetes nodes"
+  value       = aws_launch_template.node.id
 }
 
 output "bastion_id" {

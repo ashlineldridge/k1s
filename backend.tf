@@ -4,10 +4,3 @@ terraform {
     workspace_key_prefix = "k1s"
   }
 }
-
-provider "aws" {
-  region  = var.region
-  version = "~> 2.0"
-}
-
-data "aws_availability_zones" "all" {}

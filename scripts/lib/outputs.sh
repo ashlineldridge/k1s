@@ -6,17 +6,17 @@
 # shellcheck source=scripts/lib/common.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 
-__tf_output_json="$(terraform output -json)"
-if [[ "${__tf_output_json}" == '{}' ]]; then
+terraform_output_json="$(terraform output -json)"
+if [[ "${terraform_output_json}" == '{}' ]]; then
   echo >&2 "No Terraform outputs. Are you sure the environment exists?"
   exit 1
 fi
 
 # Returns the output value for the provided variable name
-__tf_output() {
+terraform_output() {
   local key="${1}"
   local value
-  value="$(jq -r ".${key}.value" <<< "${__tf_output_json}")"
+  value="$(jq -r ".${key}.value" <<< "${terraform_output_json}")"
   if [[ "${value}" == 'null' ]]; then
     echo >&2 "Terraform output key '${key}' not found"
     exit 1
@@ -25,8 +25,10 @@ __tf_output() {
 }
 
 # Retrieve output values
-cluster_name="$(__tf_output cluster_name)"
-region="$(__tf_output region)"
-master_autoscaling_group="$(__tf_output master_autoscaling_group)"
-node_autoscaling_group="$(__tf_output node_autoscaling_group)"
-bastion_id="$(__tf_output bastion_id)"
+cluster_name="$(terraform_output cluster_name)"
+region="$(terraform_output region)"
+master_autoscaling_group="$(terraform_output master_autoscaling_group)"
+master_launch_template_id="$(terraform_output master_launch_template_id)"
+node_autoscaling_group="$(terraform_output node_autoscaling_group)"
+node_launch_template_id="$(terraform_output node_launch_template_id)"
+bastion_id="$(terraform_output bastion_id)"

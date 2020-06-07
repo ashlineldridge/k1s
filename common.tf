@@ -18,6 +18,7 @@ locals {
   ]
 }
 
+data "aws_availability_zones" "all" {}
 
 data "aws_iam_policy_document" "session_manager" {
   statement {

@@ -20,9 +20,24 @@ EOF
 (($# != 1)) && usage
 
 roll_type="${1}"
+autoscaling_group=master_autoscaling_group
 
 if [[ "${roll_type}" == 'masters' ]]; then
-  echo >&2 "Rolling masters"
+  autoscaling_group="${master_autoscaling_group}"
+elif [[ "${roll_type}" == 'nodes' ]]; then
+  autoscaling_group="${node_autoscaling_group}"
 else
-  echo >&2 "Rolling nodes"
+  printf >&2 "Unknown roll-type '%s'\n" "${roll_type}"
+  usage
 fi
+
+for instance_id in $(aws autoscaling describe-auto-scaling-groups \
+  --auto-scaling-group-names "${autoscaling_group}" \
+  --region "${region}" \
+  --query 'AutoScalingGroups[].Instances[].InstanceId' \
+  --output text); do
+  echo >&2 "Terminating ${instance_id}"
+  aws ec2 terminate-instances \
+    --instance-ids "${instance_id}" \
+    --region "${region}" > /dev/null
+done
