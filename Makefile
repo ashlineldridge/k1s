@@ -2,6 +2,7 @@ cluster_name := k1s
 region       := us-west-1
 workspace    := $(cluster_name)-$(region)
 build_dir    := target
+terraform    := terraform_0.13.0-beta1
 plan_file    := $(build_dir)/$(workspace).tfplan
 sh_src       := $(shell find . -type f -name '*.sh')
 
@@ -67,7 +68,7 @@ $(workspace): init
 	fi
 
 .PHONY: plan
-plan: $(workspace)
+plan: $(workspace) $(build_dir)
 	@$(call banner,Creating Terraform plan)
 	terraform plan -out=$(plan_file)
 

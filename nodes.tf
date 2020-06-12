@@ -12,6 +12,8 @@ resource "aws_instance" "node" {
     ca_cert_pem          = tls_self_signed_cert.ca.cert_pem
     node_cert_pem        = tls_locally_signed_cert.node[count.index].cert_pem
     node_private_key_pem = tls_private_key.node[count.index].private_key_pem
+    node_config          = data.template_file.node_config[count.index].rendered
+    kube_proxy_config    = data.template_file.kube_proxy_config.rendered
   }))
 
   tags = merge(local.common_tags, {

@@ -20,8 +20,11 @@ locals {
   master_domain_names = [for i in range(var.master_instance_count) : "master-${i}.${local.zone_name}"]
   etcd_domain_names   = [for i in range(var.master_instance_count) : "etcd-${i}.${local.zone_name}"]
 
-  // Private domain name of the API load balancer
+  // Private domain name and URLs of the API load balancer
   kube_api_domain_name = "kube-api.${local.zone_name}"
+  kube_api_port        = 6443
+  kube_api_url         = "https://${local.kube_api_domain_name}:${local.kube_api_port}"
+  kube_api_local_url   = "https://127.0.0.1:${local.kube_api_port}"
 }
 
 data "aws_availability_zones" "all" {}

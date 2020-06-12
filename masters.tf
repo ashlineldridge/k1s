@@ -15,6 +15,9 @@ resource "aws_instance" "master" {
     kube_api_private_key_pem        = tls_private_key.kube_api.private_key_pem
     service_account_cert_pem        = tls_locally_signed_cert.service_account.cert_pem
     service_account_private_key_pem = tls_private_key.service_account.private_key_pem
+    kube_controller_manager_config  = data.template_file.kube_controller_manager_config.rendered
+    kube_scheduler_config           = data.template_file.kube_scheduler_config.rendered
+    admin_config                    = data.template_file.admin_config.rendered
   }))
 
   tags = merge(local.common_tags, {
