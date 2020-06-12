@@ -55,11 +55,11 @@ output "bastion_private_ip" {
 
 output "api_load_balancer_dns_name" {
   description = "Internal DNS name for the Kubernetes API load balancer"
-  value       = aws_lb.kube_api.dns_name
+  value       = aws_lb.kube_api_public.dns_name
 }
 
-output "kube_api_nlb_ips" {
+output "kube_api_public_ips" {
   description = "Public IP addresses for the Kubernetes API NLB"
-  value       = data.dns_a_record_set.kube_api_nlb.addrs
+  value       = data.dns_a_record_set.kube_api_public.addrs
 }
 

@@ -250,10 +250,11 @@ resource "tls_cert_request" "kube_api" {
     "10.240.0.10",
     "10.240.0.11",
     "10.240.0.12",
-    // Private domain name of the NLB
+    // Private domain name of the private NLB
     local.kube_api_domain_name,
-    // Public (internal) domain name of the NLB
-    aws_lb.kube_api.dns_name
+    // AWS generated domain names of the public and private NLBs
+    aws_lb.kube_api_public.dns_name,
+    aws_lb.kube_api_private.dns_name,
   ], local.master_domain_names, local.etcd_domain_names)
 
   subject {

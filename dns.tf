@@ -1,6 +1,6 @@
 // Reads the DNS records of the Kube API NLB
-data "dns_a_record_set" "kube_api_nlb" {
-  host = aws_lb.kube_api.dns_name
+data "dns_a_record_set" "kube_api_public" {
+  host = aws_lb.kube_api_public.dns_name
 }
 
 resource "aws_route53_zone" "private" {
@@ -45,14 +45,14 @@ resource "aws_route53_record" "etcd" {
   records = [aws_instance.master[count.index].private_ip]
 }
 
-resource "aws_route53_record" "api" {
+resource "aws_route53_record" "kube_api" {
   zone_id = aws_route53_zone.private.zone_id
   name    = local.kube_api_domain_name
   type    = "A"
 
   alias {
-    name                   = aws_lb.kube_api.dns_name
-    zone_id                = aws_lb.kube_api.zone_id
+    name                   = aws_lb.kube_api_private.dns_name
+    zone_id                = aws_lb.kube_api_private.zone_id
     evaluate_target_health = false
   }
 }
