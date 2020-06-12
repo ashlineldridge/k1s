@@ -1,40 +1,17 @@
 resource "aws_instance" "bastion" {
   ami                    = data.aws_ami.amazon_linux_2.id
   instance_type          = var.bastion_instance_type
-  subnet_id              = module.vpc.private_subnets[0]
+  subnet_id              = local.private_subnet
   vpc_security_group_ids = [aws_security_group.bastion.id]
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
 
-  user_data = <<-EOF
-    #!/usr/bin/env bash
-    yum update -y \
-      https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-    yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    yum-config-manager --enable epel
-    yum install -y tinyproxy
-    amazon-linux-extras install docker
-    usermod -a -G docker ec2-user
-    systemctl restart amazon-ssm-agent
-    systemctl start docker
-    systemctl start tinyproxy
-  EOF
+  user_data_base64 = filebase64("${path.module}/scripts/user-data/bastion.sh")
 
   tags = merge(local.common_tags, {
     "Name" = "${local.cluster_id}-bastion"
   })
 
   depends_on = [module.vpc]
-}
-
-# Latest Amazon Linux 2 AMI in the region
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm*"]
-  }
 }
 
 resource "aws_security_group" "bastion" {

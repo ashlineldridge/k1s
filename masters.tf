@@ -1,34 +1,50 @@
-resource "aws_autoscaling_group" "master" {
-  name                = "${local.cluster_id}-master"
-  vpc_zone_identifier = module.vpc.private_subnets
-  desired_capacity    = 3
-  max_size            = 3
-  min_size            = 3
-  force_delete        = true
+resource "aws_instance" "master" {
+  count = var.master_instance_count
 
-  launch_template {
-    id      = aws_launch_template.master.id
-    version = aws_launch_template.master.latest_version
-  }
+  ami                    = data.aws_ami.amazon_linux_2.id
+  instance_type          = var.master_instance_type
+  subnet_id              = local.private_subnet
+  vpc_security_group_ids = [aws_security_group.master.id]
+  iam_instance_profile   = aws_iam_instance_profile.master.name
 
-  tags = concat(local.common_asg_tags, [{
-    key                 = "Name"
-    value               = "${local.cluster_id}-master"
-    propagate_at_launch = true
-  }])
+  user_data_base64 = base64encode(templatefile("${path.module}/scripts/user-data/master.sh", {
+    domain_name                     = local.master_domain_names[count.index]
+    ca_cert_pem                     = tls_self_signed_cert.ca.cert_pem
+    ca_private_key_pem              = tls_private_key.ca.private_key_pem
+    kube_api_cert_pem               = tls_locally_signed_cert.kube_api.cert_pem
+    kube_api_private_key_pem        = tls_private_key.kube_api.private_key_pem
+    service_account_cert_pem        = tls_locally_signed_cert.service_account.cert_pem
+    service_account_private_key_pem = tls_private_key.service_account.private_key_pem
+  }))
+
+  tags = merge(local.common_tags, {
+    "Name" = "${local.cluster_id}-master-${count.index}"
+  })
+
+  depends_on = [module.vpc]
 }
 
-resource "aws_launch_template" "master" {
-  name          = "${local.cluster_id}-master"
-  image_id      = data.aws_ami.amazon_linux_2.id
-  instance_type = var.master_instance_type
-  tags          = local.common_tags
+resource "aws_security_group" "master" {
+  name   = "${local.cluster_id}-master"
+  vpc_id = module.vpc.vpc_id
+  tags   = local.common_tags
 
-  iam_instance_profile {
-    arn = aws_iam_instance_profile.master.arn
+  // TODO: Lock down
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  user_data = filebase64("${path.module}/scripts/launch/master.sh")
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  depends_on = [module.vpc]
 }
 
 resource "aws_iam_role" "master" {
@@ -46,5 +62,3 @@ resource "aws_iam_role_policy" "master_session_manager" {
 resource "aws_iam_instance_profile" "master" {
   role = aws_iam_role.master.name
 }
-
-

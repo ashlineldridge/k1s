@@ -1,6 +1,6 @@
 cluster_name := k1s
 region       := us-west-1
-workspace    := k1s-$(region)
+workspace    := $(cluster_name)-$(region)
 build_dir    := target
 plan_file    := $(build_dir)/$(workspace).tfplan
 sh_src       := $(shell find . -type f -name '*.sh')
@@ -100,8 +100,8 @@ list: $(workspace)
 
 .PHONY: session
 session:
-	@$(call banner,Listing cluster instances)
 	@$(call check_defined,INSTANCE_ID,ID of instance to connect to)
+	@$(call banner,Establishing session with $(INSTANCE_ID))
 	@./scripts/session.sh $(INSTANCE_ID) $(region)
 
 .PHONY: roll-masters

@@ -29,7 +29,7 @@ variable "master_instance_type" {
 }
 
 variable "master_instance_count" {
-  type        = string
+  type        = number
   description = "Total number of master instances"
 }
 
@@ -39,7 +39,7 @@ variable "node_instance_type" {
 }
 
 variable "node_instance_count" {
-  type        = string
+  type        = number
   description = "Total number of node instances"
 }
 

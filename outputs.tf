@@ -23,27 +23,43 @@ output "private_subnet_ids" {
   value       = module.vpc.private_subnets
 }
 
-output "master_autoscaling_group" {
-  description = "Name of the autoscaling group for the Kubernetes masters"
-  value       = aws_autoscaling_group.master.name
+output "master_instance_ids" {
+  description = "IDs of the Kubernetes master instances"
+  value       = aws_instance.master[*].id
 }
 
-output "master_launch_template_id" {
-  description = "ID of the launch template for the Kubernetes masters"
-  value       = aws_launch_template.master.id
+output "master_private_ips" {
+  description = "Private IP addresses of the Kubernetes master instances"
+  value       = aws_instance.master[*].private_ip
 }
 
-output "node_autoscaling_group" {
-  description = "Name of the autoscaling group for the Kubernetes nodes"
-  value       = aws_autoscaling_group.node.name
+output "node_instance_ids" {
+  description = "IDs of the Kubernetes node instances"
+  value       = aws_instance.node[*].id
 }
 
-output "node_launch_template_id" {
-  description = "ID of the launch template for the Kubernetes nodes"
-  value       = aws_launch_template.node.id
+output "node_private_ips" {
+  description = "Private IP addresses of the Kubernetes node instances"
+  value       = aws_instance.node[*].private_ip
 }
 
 output "bastion_id" {
   description = "ID of the bastion EC2 instance"
   value       = aws_instance.bastion.id
 }
+
+output "bastion_private_ip" {
+  description = "Private IP address of the bastion EC2 instance"
+  value       = aws_instance.bastion.private_ip
+}
+
+output "api_load_balancer_dns_name" {
+  description = "Internal DNS name for the Kubernetes API load balancer"
+  value       = aws_lb.kube_api.dns_name
+}
+
+output "kube_api_nlb_ips" {
+  description = "Public IP addresses for the Kubernetes API NLB"
+  value       = data.dns_a_record_set.kube_api_nlb.addrs
+}
+

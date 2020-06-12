@@ -27,8 +27,4 @@ terraform_output() {
 # Retrieve output values
 cluster_name="$(terraform_output cluster_name)"
 region="$(terraform_output region)"
-master_autoscaling_group="$(terraform_output master_autoscaling_group)"
-master_launch_template_id="$(terraform_output master_launch_template_id)"
-node_autoscaling_group="$(terraform_output node_autoscaling_group)"
-node_launch_template_id="$(terraform_output node_launch_template_id)"
 bastion_id="$(terraform_output bastion_id)"
