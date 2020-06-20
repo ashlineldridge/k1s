@@ -2,7 +2,6 @@ cluster_name := k1s
 region       := us-west-1
 workspace    := $(cluster_name)-$(region)
 build_dir    := target
-terraform    := terraform_0.13.0-beta1
 plan_file    := $(build_dir)/$(workspace).tfplan
 sh_src       := $(shell find . -type f -name '*.sh')
 
@@ -61,11 +60,11 @@ validate: init
 
 .PHONY: $(workspace)
 $(workspace): init
-	@if [[ "$(shell terraform workspace show)" != "$(workspace)" ]]; then \
-  		$(call banner,Selecting Terraform workspace $(workspace)); \
-		terraform workspace new $(workspace) 2> /dev/null || true; \
-		terraform workspace select $(workspace) > /dev/null; \
-	fi
+ifneq ($(shell terraform workspace show),$(workspace))
+	@$(call banner,Selecting Terraform workspace $(workspace))
+	@terraform workspace new $(workspace) 2> /dev/null || true
+	@terraform workspace select $(workspace) > /dev/null
+endif
 
 .PHONY: plan
 plan: $(workspace) $(build_dir)
