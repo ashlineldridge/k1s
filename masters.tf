@@ -84,7 +84,8 @@ data "template_file" "etcd_service_config" {
 
   template = file("${path.module}/cloud-init/etcd.service.tpl")
   vars = {
-    etcd_domain_name = local.etcd_domain_names[count.index]
+    etcd_local_domain_name = local.etcd_domain_names[count.index]
+    etcd_cluster_spec      = join(",", [for i, n in local.etcd_domain_names : "controller-${i}=https://${n}:2380"])
   }
 }
 

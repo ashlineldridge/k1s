@@ -93,6 +93,11 @@ import: $(workspace)
 	@$(call check_defined,AWS_ID,AWS identifier (e.g., "my-role"))
 	terraform import $(TERRAFORM_ID) $(AWS_ID)
 
+.PHONY: console
+console: $(workspace)
+	@$(call banner,Starting Terraform console)
+	terraform console
+
 .PHONY: list
 list: $(workspace)
 	@$(call banner,Listing cluster instance information)
@@ -103,13 +108,3 @@ session:
 	@$(call check_defined,INSTANCE_ID,ID of instance to connect to)
 	@$(call banner,Establishing session with $(INSTANCE_ID))
 	@./scripts/session.sh $(INSTANCE_ID) $(region)
-
-.PHONY: roll-masters
-roll-masters: $(workspace)
-	@$(call banner,Rolling master instances)
-	@./scripts/roll.sh masters
-
-.PHONY: roll-nodes
-roll-nodes: $(workspace)
-	@$(call banner,Rolling node instances)
-	@./scripts/roll.sh nodes

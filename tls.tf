@@ -240,16 +240,13 @@ resource "tls_cert_request" "kube_api" {
     "kubernetes.default",
     "kubernetes.default.svc",
     "kubernetes.default.svc.cluster",
+    "kubernetes.default.svc.cluster.local",
     "kubernetes.svc.cluster.local",
     "127.0.0.1",
     // The Kubernetes API server is automatically assigned the kubernetes internal
     // DNS name, which will be linked to the first IP address (10.32.0.1) from the
-    // address range 10.32.0.0/24
+    // address range 10.32.0.0/24 (i.e., the internal pod networking address range).
     "10.32.0.1",
-    // The following three IP addresses are those assigned to the etcd servers
-    "10.240.0.10",
-    "10.240.0.11",
-    "10.240.0.12",
     // Private domain name of the private NLB
     local.kube_api_domain_name,
     // AWS generated domain names of the public and private NLBs

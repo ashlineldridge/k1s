@@ -63,3 +63,4 @@ output "kube_api_public_ips" {
   value       = data.dns_a_record_set.kube_api_public.addrs
 }
 
+
