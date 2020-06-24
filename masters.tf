@@ -85,8 +85,12 @@ data "template_file" "etcd_service_config" {
 
   template = file("${path.module}/cloud-init/etcd.service.tpl")
   vars = {
-    etcd_local_domain_name = local.etcd_domain_names[count.index]
-    etcd_cluster_spec      = join(",", [for i, n in local.etcd_domain_names : "controller-${i}=https://${n}:2380"])
+    name                        = "etcd-${count.index}"
+    initial_advertise_peer_urls = "https://${local.master_ips[count.index]}:2380"
+    listen_peer_urls            = "https://${local.master_ips[count.index]}:2380"
+    listen_client_urls          = "https://${local.master_ips[count.index]}:2379,https://127.0.0.1:2379"
+    advertise_client_urls       = "https://${local.master_ips[count.index]}:2379"
+    initial_cluster             = join(",", [for i, ip in local.master_ips : "controller-${i}=https://${ip}:2380"])
   }
 }
 

@@ -5,7 +5,7 @@ Documentation=https://github.com/coreos
 [Service]
 Type=notify
 ExecStart=/usr/local/bin/etcd \
-  --name ${etcd_local_domain_name} \
+  --name ${name} \
   --cert-file=/etc/etcd/kube_api_cert.pem \
   --key-file=/etc/etcd/kube_api_private_key.pem \
   --peer-cert-file=/etc/etcd/kube_api_cert.pem \
@@ -14,12 +14,12 @@ ExecStart=/usr/local/bin/etcd \
   --peer-trusted-ca-file=/etc/etcd/ca_cert.pem \
   --peer-client-cert-auth \
   --client-cert-auth \
-  --initial-advertise-peer-urls https://${etcd_local_domain_name}:2380 \
-  --listen-peer-urls https://${etcd_local_domain_name}:2380 \
-  --listen-client-urls https://${etcd_local_domain_name}:2379,https://127.0.0.1:2379 \
-  --advertise-client-urls https://${etcd_local_domain_name}:2379 \
+  --initial-advertise-peer-urls ${initial_advertise_peer_urls} \
+  --listen-peer-urls ${listen_peer_urls} \
+  --listen-client-urls ${listen_client_urls} \
+  --advertise-client-urls ${advertise_client_urls} \
   --initial-cluster-token etcd-cluster-0 \
-  --initial-cluster ${etcd_cluster_spec} \
+  --initial-cluster ${initial_cluster} \
   --initial-cluster-state new \
   --data-dir=/var/lib/etcd
 Restart=on-failure

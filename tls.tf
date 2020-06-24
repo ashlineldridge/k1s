@@ -98,7 +98,7 @@ resource "tls_cert_request" "node" {
 
   dns_names = [
     "node-${count.index}",
-    "node-${count.index}.${local.zone_name}",
+    local.node_ips[count.index],
   ]
 
   subject {
@@ -252,7 +252,7 @@ resource "tls_cert_request" "kube_api" {
     // AWS generated domain names of the public and private NLBs
     aws_lb.kube_api_public.dns_name,
     aws_lb.kube_api_private.dns_name,
-  ], local.master_domain_names, local.etcd_domain_names)
+  ], local.master_ips)
 
   subject {
     common_name         = "Kubernetes"
@@ -307,22 +307,3 @@ resource "tls_locally_signed_cert" "service_account" {
   validity_period_hours = local.cert_validity_hours
   allowed_uses          = local.cert_allowed_uses
 }
-
-//resource "local_file" "ca_cert" {
-//  content  = tls_self_signed_cert.ca.cert_pem
-//  filename = "${path.module}/target/ca_cert.pem"
-//}
-//
-//resource "local_file" "node_cert" {
-//  count = var.node_instance_count
-//
-//  content  = tls_locally_signed_cert.node[count.index].cert_pem
-//  filename = "${path.module}/target/node_cert_${count.index}.pem"
-//}
-//
-//resource "local_file" "node_private_key" {
-//  count = var.node_instance_count
-//
-//  content  = tls_private_key.node[count.index].private_key_pem
-//  filename = "${path.module}/target/node_private_key_${count.index}.pem"
-//}
