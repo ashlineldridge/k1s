@@ -23,6 +23,11 @@ variable "private_subnet_cidr_blocks" {
   description = "List of CIDR blocks for the private subnets"
 }
 
+variable "pod_cidr_block" {
+  type        = string
+  description = "CIDR block used internally for the pod network"
+}
+
 variable "master_instance_type" {
   type        = string
   description = "EC2 instance type of the master instances"

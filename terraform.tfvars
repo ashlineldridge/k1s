@@ -1,6 +1,7 @@
-vpc_cidr_block             = "10.0.0.0/20"
-public_subnet_cidr_blocks  = ["10.0.0.0/26", "10.0.0.64/26"] //, "10.0.0.128/26"] us-west-1 only has 2 AZs
-private_subnet_cidr_blocks = ["10.0.4.0/22", "10.0.8.0/22"]  //, "10.0.12.0/22"]
+vpc_cidr_block             = "10.240.0.0/16"
+public_subnet_cidr_blocks  = ["10.240.3.0/24", "10.240.4.0/24", "10.240.5.0/24"]
+private_subnet_cidr_blocks = ["10.240.0.0/24", "10.240.1.0/24", "10.240.2.0/24"]
+pod_cidr_block             = "10.32.0.0/24"
 master_instance_type       = "t3.medium"
 master_instance_count      = 1
 node_instance_type         = "t3.medium"

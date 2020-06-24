@@ -1,5 +1,5 @@
 cluster_name := k1s
-region       := us-west-1
+region       := us-west-2
 workspace    := $(cluster_name)-$(region)
 build_dir    := target
 plan_file    := $(build_dir)/$(workspace).tfplan

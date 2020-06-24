@@ -8,9 +8,12 @@ locals {
     cluster-region = var.region
   }
 
-  // For simplicity, we'll just use a single public and private subnet for now
+  // For simplicity, we'll just use a single public and private subnet.
   public_subnet  = module.vpc.public_subnets[0]
   private_subnet = module.vpc.private_subnets[0]
+
+  master_ips = [for i in range(var.master_instance_count) : cidrhost(var.private_subnet_cidr_blocks[0], 10 + i)]
+  node_ips   = [for i in range(var.master_instance_count) : cidrhost(var.private_subnet_cidr_blocks[0], 20 + i)]
 
   // Name of the Route53 private zone
   zone_name = "${local.cluster_id}.local"

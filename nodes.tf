@@ -6,6 +6,7 @@ resource "aws_instance" "node" {
   subnet_id              = local.private_subnet
   vpc_security_group_ids = [aws_security_group.node.id]
   iam_instance_profile   = aws_iam_instance_profile.node.name
+  private_ip             = local.node_ips[count.index]
 
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/user-data/node.sh", {
     domain_name          = local.node_domain_names[count.index]

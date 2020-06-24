@@ -6,6 +6,7 @@ resource "aws_instance" "master" {
   subnet_id              = local.private_subnet
   vpc_security_group_ids = [aws_security_group.master.id]
   iam_instance_profile   = aws_iam_instance_profile.master.name
+  private_ip             = local.master_ips[count.index]
 
   user_data_base64 = data.template_cloudinit_config.master[count.index].rendered
 
