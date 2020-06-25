@@ -6,6 +6,9 @@ resource "aws_lb" "kube_api_public" {
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
   tags                             = local.common_tags
+
+  // So that the NLB doesn't steal the fixed IPs of the instances
+  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.node]
 }
 
 resource "aws_lb_listener" "kube_api_public" {
@@ -35,6 +38,9 @@ resource "aws_lb" "kube_api_private" {
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
   tags                             = local.common_tags
+
+  // So that the NLB doesn't steal the fixed IPs of the instances
+  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.node]
 }
 
 resource "aws_lb_listener" "kube_api_private" {

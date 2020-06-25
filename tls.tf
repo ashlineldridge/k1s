@@ -246,9 +246,6 @@ resource "tls_cert_request" "kube_api" {
     "kubernetes.svc.cluster.local",
     // Private domain name of the private NLB
     local.kube_api_private_domain,
-    // AWS generated domain names of the public and private NLBs
-    aws_lb.kube_api_public.dns_name,
-    aws_lb.kube_api_private.dns_name,
   ]
 
   // IP SANs

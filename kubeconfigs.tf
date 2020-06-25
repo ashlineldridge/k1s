@@ -6,7 +6,7 @@ locals {
   ca_cert = replace(regex(local.pem_extract, tls_self_signed_cert.ca.cert_pem)[0], "\n", "")
 
   // General template for defining kubeconfig files
-  kubeconfig_template = <<EOF
+  kubeconfig_template = <<EOT
     apiVersion: v1
     kind: Config
     clusters:
@@ -26,8 +26,7 @@ locals {
       user:
         client-certificate-data: $${user_cert}
         client-key-data: $${user_private_key}
-  EOF
-
+  EOT
 }
 
 data "template_file" "node_kubeconfig" {

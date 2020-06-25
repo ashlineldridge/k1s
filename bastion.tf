@@ -4,6 +4,7 @@ resource "aws_instance" "bastion" {
   subnet_id              = local.private_subnet
   vpc_security_group_ids = [aws_security_group.bastion.id]
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
+  private_ip             = local.bastion_ip
 
   user_data_base64 = filebase64("${path.module}/cloud-init/bastion/install.sh")
 

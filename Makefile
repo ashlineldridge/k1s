@@ -98,11 +98,6 @@ console: $(workspace)
 	@$(call banner,Starting Terraform console)
 	terraform console
 
-.PHONY: list
-list: $(workspace)
-	@$(call banner,Listing cluster instance information)
-	@./scripts/list.sh
-
 .PHONY: session
 session:
 	@$(call check_defined,INSTANCE_ID,ID of instance to connect to)
