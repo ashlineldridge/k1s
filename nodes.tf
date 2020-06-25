@@ -8,13 +8,13 @@ resource "aws_instance" "node" {
   iam_instance_profile   = aws_iam_instance_profile.node.name
   private_ip             = local.node_ips[count.index]
 
-  user_data_base64 = base64encode(templatefile("${path.module}/scripts/user-data/node.sh", {
+  user_data_base64 = base64encode(templatefile("${path.module}/cloud-init/node/install.sh", {
     domain_name          = local.node_domain_names[count.index]
     ca_cert_pem          = tls_self_signed_cert.ca.cert_pem
     node_cert_pem        = tls_locally_signed_cert.node[count.index].cert_pem
     node_private_key_pem = tls_private_key.node[count.index].private_key_pem
-    node_config          = data.template_file.node_config[count.index].rendered
-    kube_proxy_config    = data.template_file.kube_proxy_config.rendered
+    node_config          = data.template_file.node_kubeconfig[count.index].rendered
+    kube_proxy_config    = data.template_file.kube_proxy_kubeconfig.rendered
   }))
 
   tags = merge(local.common_tags, {

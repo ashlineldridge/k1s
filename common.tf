@@ -24,10 +24,10 @@ locals {
   etcd_domain_names   = [for i in range(var.master_instance_count) : "etcd-${i}.${local.zone_name}"]
 
   // Private domain name and URLs of the API load balancer
-  kube_api_domain_name = "kube-api.${local.zone_name}"
-  kube_api_port        = 6443
-  kube_api_url         = "https://${local.kube_api_domain_name}:${local.kube_api_port}"
-  kube_api_local_url   = "https://127.0.0.1:${local.kube_api_port}"
+  kube_api_private_domain = "kube-api.${local.zone_name}"
+  kube_api_port           = 6443
+  kube_api_private_url    = "https://${local.kube_api_private_domain}:${local.kube_api_port}"
+  kube_api_localhost_url  = "https://127.0.0.1:${local.kube_api_port}"
 }
 
 data "aws_availability_zones" "all" {}

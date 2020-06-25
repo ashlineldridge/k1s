@@ -1,0 +1,65 @@
+#cloud-config
+write_files:
+### TLS files
+- encoding: b64
+  content: ${ca_private_key_pem}
+  path: /var/lib/kubernetes/ca-private-key.pem
+  permissions: '0644'
+- encoding: b64
+  content: ${ca_cert_pem}
+  path: /var/lib/kubernetes/ca-cert.pem
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_api_private_key_pem}
+  path: /var/lib/kubernetes/kube-api-private-key.pem
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_api_cert_pem}
+  path: /var/lib/kubernetes/kube-api-cert.pem
+  permissions: '0644'
+- encoding: b64
+  content: ${service_account_private_key_pem}
+  path: /var/lib/kubernetes/service-account-private-key.pem
+  permissions: '0644'
+- encoding: b64
+  content: ${service_account_cert_pem}
+  path: /var/lib/kubernetes/service-account-cert.pem
+  permissions: '0644'
+
+### Kubernetes resource files
+- encoding: b64
+  content: ${encryption_config}
+  path: /etc/kubernetes/config/encryption.yaml
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_scheduler_config}
+  path: /etc/kubernetes/config/kube-scheduler.yaml
+  permissions: '0644'
+
+### Kubeconfig files
+- encoding: b64
+  content: ${kube_controller_manager_kubeconfig}
+  path: /var/lib/kubernetes/kube-controller-manager.kubeconfig
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_scheduler_kubeconfig}
+  path: /var/lib/kubernetes/kube-scheduler.kubeconfig
+  permissions: '0644'
+- encoding: b64
+  content: ${admin_kubeconfig}
+  path: /var/lib/kubernetes/admin.kubeconfig
+  permissions: '0644'
+
+### Systemd files
+- encoding: b64
+  content: ${etcd_service_config}
+  path: /etc/systemd/system/etcd.service
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_api_service_config}
+  path: /etc/systemd/system/kube-apiserver.service
+  permissions: '0644'
+- encoding: b64
+  content: ${kube_controller_manager_service_config}
+  path: /etc/systemd/system/kube-controller-manager.service
+  permissions: '0644'

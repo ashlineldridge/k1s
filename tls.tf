@@ -96,10 +96,11 @@ resource "tls_cert_request" "node" {
   key_algorithm   = tls_private_key.node[count.index].algorithm
   private_key_pem = tls_private_key.node[count.index].private_key_pem
 
-  dns_names = [
-    "node-${count.index}",
-    local.node_ips[count.index],
-  ]
+  // DNS SANs
+  dns_names = ["node-${count.index}"]
+
+  // IP SANs
+  ip_addresses = [local.node_ips[count.index]]
 
   subject {
     common_name         = "system:node:node-${count.index}"
@@ -235,23 +236,28 @@ resource "tls_cert_request" "kube_api" {
   key_algorithm   = tls_private_key.kube_api.algorithm
   private_key_pem = tls_private_key.kube_api.private_key_pem
 
-  dns_names = concat([
+  // DNS SANs
+  dns_names = [
     "kubernetes",
     "kubernetes.default",
     "kubernetes.default.svc",
     "kubernetes.default.svc.cluster",
     "kubernetes.default.svc.cluster.local",
     "kubernetes.svc.cluster.local",
-    "127.0.0.1",
-    // The Kubernetes API server is automatically assigned the kubernetes internal
-    // DNS name, which will be linked to the first IP address (10.32.0.1) from the
-    // address range 10.32.0.0/24 (i.e., the internal pod networking address range).
-    "10.32.0.1",
     // Private domain name of the private NLB
-    local.kube_api_domain_name,
+    local.kube_api_private_domain,
     // AWS generated domain names of the public and private NLBs
     aws_lb.kube_api_public.dns_name,
     aws_lb.kube_api_private.dns_name,
+  ]
+
+  // IP SANs
+  ip_addresses = concat([
+    "127.0.0.1",
+    // The Kubernetes API server is automatically assigned the kubernetes internal
+    // DNS name, which will be linked to the first (i.e., after the zeroth) IP address
+    // from the cluster service address range.
+    cidrhost(var.cluster_service_cidr_block, 1),
   ], local.master_ips)
 
   subject {

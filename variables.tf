@@ -23,9 +23,14 @@ variable "private_subnet_cidr_blocks" {
   description = "List of CIDR blocks for the private subnets"
 }
 
-variable "pod_cidr_block" {
+variable "cluster_service_cidr_block" {
   type        = string
   description = "CIDR block used internally for the pod network"
+}
+
+variable "cluster_pod_cidr_block" {
+  type        = string
+  description = "CIDR block used by the cluster for the pod network"
 }
 
 variable "master_instance_type" {

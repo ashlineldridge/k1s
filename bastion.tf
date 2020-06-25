@@ -5,7 +5,7 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = [aws_security_group.bastion.id]
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
 
-  user_data_base64 = filebase64("${path.module}/scripts/user-data/bastion.sh")
+  user_data_base64 = filebase64("${path.module}/cloud-init/bastion/install.sh")
 
   tags = merge(local.common_tags, {
     "Name" = "${local.cluster_id}-bastion"

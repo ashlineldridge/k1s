@@ -15,9 +15,9 @@ resource "aws_route53_zone" "private" {
   tags = local.common_tags
 }
 
-resource "aws_route53_record" "kube_api" {
+resource "aws_route53_record" "kube_api_private_nlb" {
   zone_id = aws_route53_zone.private.zone_id
-  name    = local.kube_api_domain_name
+  name    = local.kube_api_private_domain
   type    = "A"
 
   alias {
