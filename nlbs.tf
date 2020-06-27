@@ -13,7 +13,7 @@ resource "aws_lb" "kube_api_public" {
 
 resource "aws_lb_listener" "kube_api_public" {
   load_balancer_arn = aws_lb.kube_api_public.arn
-  port              = "443"
+  port              = 443
   protocol          = "TCP"
 
   default_action {
@@ -23,11 +23,26 @@ resource "aws_lb_listener" "kube_api_public" {
 }
 
 resource "aws_lb_target_group" "kube_api_public" {
-  name     = "${local.cluster_id}-kube-api-public"
-  port     = 443
-  protocol = "TCP"
-  vpc_id   = module.vpc.vpc_id
-  tags     = local.common_tags
+  name        = "${local.cluster_id}-kube-api-public"
+  port        = 6443
+  protocol    = "TCP"
+  target_type = "instance"
+  vpc_id      = module.vpc.vpc_id
+  tags        = local.common_tags
+
+  health_check {
+    interval = 10
+    port     = 6443
+    protocol = "TCP"
+  }
+}
+
+resource "aws_lb_target_group_attachment" "kube_api_public" {
+  count = var.master_instance_count
+
+  target_group_arn = aws_lb_target_group.kube_api_public.arn
+  target_id        = aws_instance.master[count.index].id
+  port             = 443
 }
 
 resource "aws_lb" "kube_api_private" {
@@ -45,7 +60,7 @@ resource "aws_lb" "kube_api_private" {
 
 resource "aws_lb_listener" "kube_api_private" {
   load_balancer_arn = aws_lb.kube_api_private.arn
-  port              = "443"
+  port              = 443
   protocol          = "TCP"
 
   default_action {
@@ -55,9 +70,24 @@ resource "aws_lb_listener" "kube_api_private" {
 }
 
 resource "aws_lb_target_group" "kube_api_private" {
-  name     = "${local.cluster_id}-kube-api-private"
-  port     = 443
-  protocol = "TCP"
-  vpc_id   = module.vpc.vpc_id
-  tags     = local.common_tags
+  name        = "${local.cluster_id}-kube-api-private"
+  port        = 6443
+  protocol    = "TCP"
+  target_type = "instance"
+  vpc_id      = module.vpc.vpc_id
+  tags        = local.common_tags
+
+  health_check {
+    interval = 10
+    port     = 6443
+    protocol = "TCP"
+  }
+}
+
+resource "aws_lb_target_group_attachment" "kube_api_private" {
+  count = var.master_instance_count
+
+  target_group_arn = aws_lb_target_group.kube_api_private.arn
+  target_id        = aws_instance.master[count.index].id
+  port             = 443
 }

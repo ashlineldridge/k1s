@@ -8,6 +8,11 @@ variable "region" {
   description = "AWS region to provision resources in"
 }
 
+variable "build_dir" {
+  type        = string
+  description = "Build directory relative to the repository root"
+}
+
 variable "vpc_cidr_block" {
   type        = string
   description = "CIDR block for the cluster VPC"

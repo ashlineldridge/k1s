@@ -12,6 +12,7 @@ export MAKE := 1
 export TF_IN_AUTOMATION    := 1
 export TF_VAR_cluster_name := $(cluster_name)
 export TF_VAR_region       := $(region)
+export TF_VAR_build_dir    := $(build_dir)
 
 no_color := \033[0m
 ok_color := \033[38;5;74m

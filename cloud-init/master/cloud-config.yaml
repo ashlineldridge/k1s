@@ -63,3 +63,7 @@ write_files:
   content: ${kube_controller_manager_service_config}
   path: /etc/systemd/system/kube-controller-manager.service
   permissions: '0644'
+- encoding: b64
+  content: ${kube_scheduler_service_config}
+  path: /etc/systemd/system/kube-scheduler.service
+  permissions: '0644'
