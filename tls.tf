@@ -1,5 +1,5 @@
 locals {
-  ecdsa_algorithm = "ECDSA"
+  ecdsa_algorithm = "RSA"
   ecdsa_curve     = "P256"
 
   ca_cert_validity_hours = 3 * 365 * 24
@@ -16,11 +16,14 @@ locals {
     "server_auth",
     "client_auth",
   ]
+
+  // Local directory that we save TLS files to
+  tls_dir = "${path.module}/${var.build_dir}/tls"
 }
 
-#
-# CA certificate material
-#
+//
+// CA certificate material
+//
 
 resource "tls_private_key" "ca" {
   algorithm   = local.ecdsa_algorithm
@@ -45,9 +48,9 @@ resource "tls_self_signed_cert" "ca" {
   allowed_uses = local.ca_cert_allowed_uses
 }
 
-#
-# Admin user certificate material
-#
+//
+// Admin user certificate material
+//
 
 resource "tls_private_key" "admin" {
   algorithm   = local.ecdsa_algorithm
@@ -79,31 +82,31 @@ resource "tls_locally_signed_cert" "admin" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Kubelet (per-node) certificate material
-#
+//
+// Kubelet (per-worker) certificate material
+//
 
-resource "tls_private_key" "node" {
-  count = var.node_instance_count
+resource "tls_private_key" "worker" {
+  count = var.worker_instance_count
 
   algorithm   = local.ecdsa_algorithm
   ecdsa_curve = local.ecdsa_curve
 }
 
-resource "tls_cert_request" "node" {
-  count = var.node_instance_count
+resource "tls_cert_request" "worker" {
+  count = var.worker_instance_count
 
-  key_algorithm   = tls_private_key.node[count.index].algorithm
-  private_key_pem = tls_private_key.node[count.index].private_key_pem
+  key_algorithm   = tls_private_key.worker[count.index].algorithm
+  private_key_pem = tls_private_key.worker[count.index].private_key_pem
 
   // DNS SANs
-  dns_names = ["node-${count.index}"]
+  dns_names = ["worker-${count.index}"]
 
   // IP SANs
-  ip_addresses = [local.node_ips[count.index]]
+  ip_addresses = [local.worker_ips[count.index]]
 
   subject {
-    common_name         = "system:node:node-${count.index}"
+    common_name         = "system:node:worker-${count.index}"
     country             = "US"
     locality            = "Portland"
     organization        = "system:nodes"
@@ -112,10 +115,10 @@ resource "tls_cert_request" "node" {
   }
 }
 
-resource "tls_locally_signed_cert" "node" {
-  count = var.node_instance_count
+resource "tls_locally_signed_cert" "worker" {
+  count = var.worker_instance_count
 
-  cert_request_pem   = tls_cert_request.node[count.index].cert_request_pem
+  cert_request_pem   = tls_cert_request.worker[count.index].cert_request_pem
   ca_key_algorithm   = tls_private_key.ca.algorithm
   ca_private_key_pem = tls_private_key.ca.private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca.cert_pem
@@ -124,9 +127,9 @@ resource "tls_locally_signed_cert" "node" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Kube Controller Manager certificate material
-#
+//
+// Kube Controller Manager certificate material
+//
 
 resource "tls_private_key" "kube_controller_manager" {
   algorithm   = local.ecdsa_algorithm
@@ -157,9 +160,9 @@ resource "tls_locally_signed_cert" "kube_controller_manager" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Kube Proxy certificate material
-#
+//
+// Kube Proxy certificate material
+//
 
 resource "tls_private_key" "kube_proxy" {
   algorithm   = local.ecdsa_algorithm
@@ -190,9 +193,9 @@ resource "tls_locally_signed_cert" "kube_proxy" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Kube Scheduler certificate material
-#
+//
+// Kube Scheduler certificate material
+//
 
 resource "tls_private_key" "kube_scheduler" {
   algorithm   = local.ecdsa_algorithm
@@ -223,9 +226,9 @@ resource "tls_locally_signed_cert" "kube_scheduler" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Kubernetes API server certificate material
-#
+//
+// Kubernetes API server certificate material
+//
 
 resource "tls_private_key" "kube_api" {
   algorithm   = local.ecdsa_algorithm
@@ -277,10 +280,10 @@ resource "tls_locally_signed_cert" "kube_api" {
   allowed_uses          = local.cert_allowed_uses
 }
 
-#
-# Service Account certificate material (used by kube-controller-manager -
-# described here: https://kubernetes.io/docs/admin/service-accounts-admin/)
-#
+//
+// Service Account certificate material (used by kube-controller-manager -
+// described here: https://kubernetes.io/docs/admin/service-accounts-admin/)
+//
 
 resource "tls_private_key" "service_account" {
   algorithm   = local.ecdsa_algorithm

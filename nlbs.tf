@@ -8,7 +8,7 @@ resource "aws_lb" "kube_api_public" {
   tags                             = local.common_tags
 
   // So that the NLB doesn't steal the fixed IPs of the instances
-  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.node]
+  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.worker]
 }
 
 resource "aws_lb_listener" "kube_api_public" {
@@ -42,7 +42,7 @@ resource "aws_lb_target_group_attachment" "kube_api_public" {
 
   target_group_arn = aws_lb_target_group.kube_api_public.arn
   target_id        = aws_instance.master[count.index].id
-  port             = 443
+  //  port             = 6443
 }
 
 resource "aws_lb" "kube_api_private" {
@@ -55,7 +55,7 @@ resource "aws_lb" "kube_api_private" {
   tags                             = local.common_tags
 
   // So that the NLB doesn't steal the fixed IPs of the instances
-  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.node]
+  depends_on = [aws_instance.bastion, aws_instance.master, aws_instance.worker]
 }
 
 resource "aws_lb_listener" "kube_api_private" {
@@ -89,5 +89,5 @@ resource "aws_lb_target_group_attachment" "kube_api_private" {
 
   target_group_arn = aws_lb_target_group.kube_api_private.arn
   target_id        = aws_instance.master[count.index].id
-  port             = 443
+  //  port             = 6443
 }

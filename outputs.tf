@@ -33,14 +33,14 @@ output "master_private_ips" {
   value       = aws_instance.master[*].private_ip
 }
 
-output "node_instance_ids" {
-  description = "IDs of the Kubernetes node instances"
-  value       = aws_instance.node[*].id
+output "worker_instance_ids" {
+  description = "IDs of the Kubernetes worker instances"
+  value       = aws_instance.worker[*].id
 }
 
-output "node_private_ips" {
-  description = "Private IP addresses of the Kubernetes node instances"
-  value       = aws_instance.node[*].private_ip
+output "worker_private_ips" {
+  description = "Private IP addresses of the Kubernetes worker instances"
+  value       = aws_instance.worker[*].private_ip
 }
 
 output "bastion_id" {
@@ -63,4 +63,8 @@ output "kube_api_public_ips" {
   value       = data.dns_a_record_set.kube_api_public.addrs
 }
 
+output "kube_api_public_url" {
+  description = "Public URL for the Kubernetes API"
+  value       = local.kube_api_public_url
+}
 

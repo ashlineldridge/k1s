@@ -4,7 +4,7 @@ data "dns_a_record_set" "kube_api_public" {
 }
 
 resource "aws_route53_zone" "private" {
-  name          = local.zone_name
+  name          = local.private_zone_name
   comment       = "Private zone for cluster ${local.cluster_id}"
   force_destroy = true
 
@@ -23,6 +23,22 @@ resource "aws_route53_record" "kube_api_private_nlb" {
   alias {
     name                   = aws_lb.kube_api_private.dns_name
     zone_id                = aws_lb.kube_api_private.zone_id
+    evaluate_target_health = false
+  }
+}
+
+data "aws_route53_zone" "public" {
+  name = var.public_zone_name
+}
+
+resource "aws_route53_record" "kube_api_public_nlb" {
+  zone_id = data.aws_route53_zone.public.zone_id
+  name    = local.kube_api_public_domain
+  type    = "A"
+
+  alias {
+    name                   = aws_lb.kube_api_public.dns_name
+    zone_id                = aws_lb.kube_api_public.zone_id
     evaluate_target_health = false
   }
 }

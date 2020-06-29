@@ -26,15 +26,15 @@ locals {
   kubeconfig_dir = "${path.module}/${var.build_dir}/kubeconfigs"
 }
 
-data "template_file" "node_kubeconfig" {
-  count = var.node_instance_count
+data "template_file" "worker_kubeconfig" {
+  count = var.worker_instance_count
 
   template = local.kubeconfig_template
   vars = {
     server           = local.kube_api_private_url
-    user             = "system:node:node-${count.index}"
-    user_cert        = base64encode(tls_locally_signed_cert.node[count.index].cert_pem)
-    user_private_key = base64encode(tls_private_key.node[count.index].private_key_pem)
+    user             = "system:node:worker-${count.index}"
+    user_cert        = base64encode(tls_locally_signed_cert.worker[count.index].cert_pem)
+    user_private_key = base64encode(tls_private_key.worker[count.index].private_key_pem)
   }
 }
 
@@ -76,42 +76,4 @@ data "template_file" "admin_kubeconfig" {
     user_cert        = base64encode(tls_locally_signed_cert.admin.cert_pem)
     user_private_key = base64encode(tls_private_key.admin.private_key_pem)
   }
-}
-
-resource "local_file" "node_kubeconfig" {
-  count = var.node_instance_count
-
-  content         = data.template_file.node_kubeconfig[count.index].rendered
-  filename        = "${local.kubeconfig_dir}/node-${count.index}.kubeconfig"
-  file_permission = "0600"
-}
-
-resource "local_file" "kube_proxy_kubeconfig" {
-  content         = data.template_file.kube_proxy_kubeconfig.rendered
-  filename        = "${local.kubeconfig_dir}/kube-proxy.kubeconfig"
-  file_permission = "0600"
-}
-
-resource "local_file" "kube_controller_manager_kubeconfig" {
-  content         = data.template_file.kube_controller_manager_kubeconfig.rendered
-  filename        = "${local.kubeconfig_dir}/kube-controller-manager.kubeconfig"
-  file_permission = "0600"
-}
-
-resource "local_file" "kube_scheduler_kubeconfig" {
-  content         = data.template_file.kube_scheduler_kubeconfig.rendered
-  filename        = "${local.kubeconfig_dir}/kube-scheduler.kubeconfig"
-  file_permission = "0600"
-}
-
-resource "local_file" "admin_kubeconfig" {
-  content         = data.template_file.admin_kubeconfig.rendered
-  filename        = "${local.kubeconfig_dir}/admin.kubeconfig"
-  file_permission = "0600"
-}
-
-resource "local_file" "ca_cert_pem" {
-  content         = tls_self_signed_cert.ca.cert_pem
-  filename        = "${local.kubeconfig_dir}/ca_cert.pem"
-  file_permission = "0600"
 }

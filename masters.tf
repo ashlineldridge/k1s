@@ -14,7 +14,7 @@ resource "aws_instance" "master" {
     "Name" = "${local.cluster_id}-master-${count.index}"
   })
 
-  depends_on = [module.vpc]
+  depends_on = [module.vpc, aws_s3_bucket_object.master_files]
 }
 
 resource "aws_security_group" "master" {
@@ -63,76 +63,18 @@ data "template_cloudinit_config" "master" {
   base64_encode = true
 
   part {
-    filename     = "init.cfg"
-    content_type = "text/cloud-config"
-    content = templatefile("${path.module}/cloud-init/master/cloud-config.yaml", {
-      ca_private_key_pem                     = base64encode(tls_private_key.ca.private_key_pem)
-      ca_cert_pem                            = base64encode(tls_self_signed_cert.ca.cert_pem)
-      kube_api_private_key_pem               = base64encode(tls_private_key.kube_api.private_key_pem)
-      kube_api_cert_pem                      = base64encode(tls_locally_signed_cert.kube_api.cert_pem)
-      service_account_private_key_pem        = base64encode(tls_private_key.service_account.private_key_pem)
-      service_account_cert_pem               = base64encode(tls_locally_signed_cert.service_account.cert_pem)
-      encryption_config                      = base64encode(data.template_file.encryption_config.rendered)
-      kube_scheduler_config                  = filebase64("${path.module}/cloud-init/master/kube-scheduler.yaml")
-      kube_controller_manager_kubeconfig     = base64encode(data.template_file.kube_controller_manager_kubeconfig.rendered)
-      kube_scheduler_kubeconfig              = base64encode(data.template_file.kube_scheduler_kubeconfig.rendered)
-      admin_kubeconfig                       = base64encode(data.template_file.admin_kubeconfig.rendered)
-      etcd_service_config                    = base64encode(data.template_file.etcd_service_config[count.index].rendered)
-      kube_api_service_config                = base64encode(data.template_file.kube_api_service_config[count.index].rendered)
-      kube_controller_manager_service_config = base64encode(data.template_file.kube_controller_manager_service_config[count.index].rendered)
-      kube_scheduler_service_config          = filebase64("${path.module}/cloud-init/master/kube-scheduler.service")
-    })
+    content_type = "text/x-shellscript"
+    content      = <<EOT
+      #!/usr/bin/env bash
+      mkdir -p /etc/boot
+      echo "${local.master_files_checksum}" > /etc/boot/files.md5
+      echo "${count.index}" > /etc/boot/id
+      echo "${aws_s3_bucket.cloud_init.id}" > /etc/boot/bucket
+    EOT
   }
 
   part {
     content_type = "text/x-shellscript"
-    content      = file("${path.module}/cloud-init/master/install.sh")
-  }
-}
-
-data "template_file" "etcd_service_config" {
-  count = var.master_instance_count
-
-  template = file("${path.module}/cloud-init/master/etcd.service")
-  vars = {
-    name                        = "master-${count.index}"
-    initial_advertise_peer_urls = "https://${local.master_ips[count.index]}:2380"
-    listen_peer_urls            = "https://${local.master_ips[count.index]}:2380"
-    listen_client_urls          = "https://${local.master_ips[count.index]}:2379,https://127.0.0.1:2379"
-    advertise_client_urls       = "https://${local.master_ips[count.index]}:2379"
-    initial_cluster             = join(",", [for i, ip in local.master_ips : "master-${i}=https://${ip}:2380"])
-  }
-}
-
-data "template_file" "kube_api_service_config" {
-  count = var.master_instance_count
-
-  template = file("${path.module}/cloud-init/master/kube-apiserver.service")
-  vars = {
-    advertise_address        = local.master_ips[count.index]
-    etcd_servers             = join(",", [for i, ip in local.master_ips : "https://${ip}:2379"])
-    service_cluster_ip_range = var.cluster_service_cidr_block
-  }
-}
-
-data "template_file" "kube_controller_manager_service_config" {
-  count = var.master_instance_count
-
-  template = file("${path.module}/cloud-init/master/kube-controller-manager.service")
-  vars = {
-    cluster_cidr             = var.cluster_pod_cidr_block
-    service_cluster_ip_range = var.cluster_service_cidr_block
-  }
-}
-
-resource "random_password" "encryption_key" {
-  length  = 32
-  special = true
-}
-
-data "template_file" "encryption_config" {
-  template = file("${path.module}/cloud-init/master/encryption.yaml")
-  vars = {
-    encryption_key = base64encode(random_password.encryption_key.result)
+    content      = file("${path.module}/cloud-init/master/init.sh")
   }
 }

@@ -48,18 +48,23 @@ variable "master_instance_count" {
   description = "Total number of master instances"
 }
 
-variable "node_instance_type" {
+variable "worker_instance_type" {
   type        = string
-  description = "EC2 instance type of the node instances"
+  description = "EC2 instance type of the worker instances"
 }
 
-variable "node_instance_count" {
+variable "worker_instance_count" {
   type        = number
-  description = "Total number of node instances"
+  description = "Total number of worker instances"
 }
 
 variable "bastion_instance_type" {
   type        = string
   description = "EC2 instance type of the bastion instance"
+}
+
+variable "public_zone_name" {
+  type        = string
+  description = "Public hosted zone used to create an alias for the public load balancer"
 }
 
