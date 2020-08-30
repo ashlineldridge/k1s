@@ -50,8 +50,26 @@ resource "aws_iam_role_policy" "worker_session_manager" {
   role   = aws_iam_role.worker.name
 }
 
+resource "aws_iam_role_policy" "worker_s3" {
+  policy = data.aws_iam_policy_document.worker_s3.json
+  role   = aws_iam_role.worker.name
+}
+
 resource "aws_iam_instance_profile" "worker" {
   role = aws_iam_role.worker.name
+}
+
+data "aws_iam_policy_document" "worker_s3" {
+  statement {
+    sid       = "AllowListCloudInitBucket"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.cloud_init.arn]
+  }
+  statement {
+    sid       = "AllowGetCloudInitObjects"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.cloud_init.arn}/${local.worker_prefix}/*"]
+  }
 }
 
 

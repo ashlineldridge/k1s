@@ -8,6 +8,7 @@ resource "aws_instance" "master" {
   iam_instance_profile   = aws_iam_instance_profile.master.name
   private_ip             = local.master_ips[count.index]
 
+
   user_data_base64 = data.template_cloudinit_config.master[count.index].rendered
 
   tags = merge(local.common_tags, {
@@ -52,8 +53,26 @@ resource "aws_iam_role_policy" "master_session_manager" {
   role   = aws_iam_role.master.name
 }
 
+resource "aws_iam_role_policy" "master_s3" {
+  policy = data.aws_iam_policy_document.master_s3.json
+  role   = aws_iam_role.master.name
+}
+
 resource "aws_iam_instance_profile" "master" {
   role = aws_iam_role.master.name
+}
+
+data "aws_iam_policy_document" "master_s3" {
+  statement {
+    sid       = "AllowListCloudInitBucket"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.cloud_init.arn]
+  }
+  statement {
+    sid       = "AllowGetCloudInitObjects"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.cloud_init.arn}/${local.master_prefix}/*"]
+  }
 }
 
 data "template_cloudinit_config" "master" {

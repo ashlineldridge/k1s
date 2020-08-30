@@ -1,9 +1,11 @@
 cluster_name := k1s
 region       := us-west-2
-workspace    := $(cluster_name)-$(region)
-build_dir    := target
-plan_file    := $(build_dir)/$(workspace).tfplan
-sh_src       := $(shell find . -type f -name '*.sh')
+
+workspace         := $(cluster_name)-$(region)
+current_workspace := $(shell terraform workspace show)
+build_dir         := target
+plan_file         := $(build_dir)/$(workspace).tfplan
+sh_src            := $(shell find . -type f -name '*.sh')
 
 # Variables consumed by scripts
 export MAKE := 1
@@ -28,7 +30,7 @@ check_defined = \
 .PHONY: clean
 clean:
 	@$(call banner,Cleaning)
-	rm -rf ./$(build_dir) ./.terraform
+	@rm -rf ./$(build_dir) ./.terraform
 
 .PHONY: lint
 lint:
@@ -42,62 +44,62 @@ lint:
 $(build_dir):
 	@mkdir -p $(build_dir)
 
-.terraform/lock: backend.tf providers.tf
+init:
 	@$(call banner,Initialising Terraform)
+ifneq ($(workspace),$(current_workspace))
+	@rm -rf .terraform/terraform.tfstate .terraform/environment
+endif
 	@$(eval account_id := $(shell aws sts get-caller-identity --query Account --output text || kill $$PPID))
 	@terraform init \
 		-backend-config=region=ap-southeast-2 \
 		-backend-config=bucket=terraform-$(account_id) \
 		-backend-config=key=terraform.tfstate \
 		-backend-config=dynamodb_table=terraform
-	@touch .terraform/lock
-
-init: .terraform/lock
 
 .PHONY: validate
 validate: init
-	@$(call banner,Validating Terraform)
-	terraform validate
+	@$(call banner,Validating Terraform configuration)
+	@terraform validate
 
-.PHONY: $(workspace)
-$(workspace): init
-ifneq ($(shell terraform workspace show),$(workspace))
+.PHONY: workspace
+workspace: init
+ifneq ($(workspace),$(current_workspace))
 	@$(call banner,Selecting Terraform workspace $(workspace))
 	@terraform workspace new $(workspace) 2> /dev/null || true
 	@terraform workspace select $(workspace) > /dev/null
 endif
 
 .PHONY: plan
-plan: $(workspace) $(build_dir)
+plan: workspace $(build_dir)
 	@$(call banner,Creating Terraform plan)
-	terraform plan -out=$(plan_file)
+	@terraform plan -out=$(plan_file)
 
 .PHONY: apply
-apply: $(workspace)
+apply: workspace
 	@$(call banner,Applying Terraform plan)
-	terraform apply $(plan_file)
+	@terraform apply $(plan_file)
 
 .PHONY: refresh
-refresh: $(workspace)
+refresh: workspace
 	@$(call banner,Refreshing Terraform)
-	terraform refresh
+	@terraform refresh
 
 .PHONY: destroy
-destroy: $(workspace)
+destroy: workspace
 	@$(call banner,Destroying Terraform resources)
-	TF_IN_AUTOMATION=0 terraform destroy
+	@TF_IN_AUTOMATION=0 terraform destroy
 
 .PHONY: import
-import: $(workspace)
-	@$(call banner,Importing Terraform resource)
+import: workspace
 	@$(call check_defined,TERRAFORM_ID,Terraform identifier (e.g., "aws_iam_role.my_role"))
 	@$(call check_defined,AWS_ID,AWS identifier (e.g., "my-role"))
-	terraform import $(TERRAFORM_ID) $(AWS_ID)
+	@$(call banner,Importing Terraform resource $(TERRAFORM_ID) from $(AWS_ID))
+	@terraform import $(TERRAFORM_ID) $(AWS_ID)
 
 .PHONY: console
-console: $(workspace)
+console: workspace
 	@$(call banner,Starting Terraform console)
-	terraform console
+	@terraform console
 
 .PHONY: session
 session:
